@@ -340,12 +340,12 @@ impl<'a> HtmlNode<'a> {
     }
 }
 
-pub fn send(s: &str)->String {		
+pub fn send(server: &str, s: &str)->String {		
     let a = js! { (s) b"\
         var xhr = new XMLHttpRequest();\
-        xhr.open('POST', 'http://127.0.0.1:8000/',false);\
+        xhr.open('POST',UTF8ToString($0) ,false);\
 	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded') ;\
-	xhr.send(UTF8ToString($0));\
+	xhr.send(UTF8ToString($1));\
 	if (xhr.status === 200)   return allocate(intArrayFromString(xhr.responseText), 'i8', ALLOC_STACK);\
     \0" };
 	 unsafe {
