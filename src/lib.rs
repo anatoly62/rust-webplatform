@@ -340,7 +340,7 @@ pub fn alert(s: &str) {
     \0" };
 }
 
-pub fn send <F: FnMut(& str) + 'a>(s: &str, f: F) {
+pub fn send <F: FnMut(& str) + 'static>(s: &str, f: F) {
     js! { (s) b"\
         var xhr = new XMLHttpRequest();\
         xhr.open('POST', 'http://127.0.0.1:8000/');\
