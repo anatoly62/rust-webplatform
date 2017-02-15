@@ -344,10 +344,10 @@ pub fn send(s: &str) {
     js! { (s) b"\
         var xhr = new XMLHttpRequest();\
         xhr.open('POST', 'http://127.0.0.1:8000/');\
-        xhr.onload = function() {alert(UTF8ToString(this.responseText));}\
-	    xhr.onerror = function() {alert(UTF8ToString(this.status));}\
-	    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded') ;\
-	    xhr.send(UTF8ToString($0));\
+        xhr.onload = function() {alert(UTF8ToString(this.responseText))};\
+	xhr.onerror = function() {alert(UTF8ToString(this.status))};\
+	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded') ;\
+	xhr.send(UTF8ToString($0));\
     \0" };
 }
 
