@@ -340,7 +340,7 @@ impl<'a> HtmlNode<'a> {
     }
 }
 
-pub fn send <F: FnMut(Event) + 'a>(s: &str, f: F) {
+pub fn send <F: FnMut(Event) + 'static>(s: &str, f: F) {
    unsafe {
     let b = Box::new(f);
     let a = &*b as *const _;		
