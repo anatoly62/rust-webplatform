@@ -352,7 +352,7 @@ pub fn send <F: FnMut(&str) + 'static>(s: &str, f: F) {
 	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded') ;\
 	xhr.send(UTF8ToString($0));\
 	if (xhr.status === 200) {alert(request.responseText)};\
-}    
+   
     \0" };
 	}
 }
