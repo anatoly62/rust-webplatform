@@ -340,6 +340,18 @@ pub fn alert(s: &str) {
     \0" };
 }
 
+pub fn send(s: &str) {
+    js! { (s) b"\
+        var xhr = new XMLHttpRequest();\
+        xhr.open('POST', 'http://127.0.0.1:8000/');\
+        xhr.onload = function() {alert(UTF8ToString(this.responseText));}\
+	    xhr.onerror = function() {alert(UTF8ToString("Error "+this.status));}\
+	    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded') ;\
+	    xhr.send(UTF8ToString($0));\
+    \0" };
+}
+
+
 pub struct Document<'a> {
     refs: Rc<RefCell<Vec<Box<FnMut(Event<'a>) + 'a>>>>,
 }
