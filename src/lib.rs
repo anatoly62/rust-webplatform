@@ -348,10 +348,8 @@ pub fn send(s: &str) {
 //	xhr.onerror = function() {alert(this.status)};\
 	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded') ;\
 	xhr.send(UTF8ToString($0));\
-	if (xhr.status === 200) {alert(request.responseText)};\
-   
+	if (xhr.status === 200) {alert(xhr.responseText)};\   
     \0" };
-	}
 }
 
 
