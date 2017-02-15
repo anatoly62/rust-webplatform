@@ -143,7 +143,7 @@ extern fn rust_caller<F: FnMut(Event)>(a: *const libc::c_void, docptr: *const li
 
 extern fn my_caller<F: FnMut(&str)>(a: *const libc::c_void, docptr: *const libc::c_void, id: i32) {
     let v:&mut F = unsafe { mem::transmute(a) };
-    v(&str {   });
+    v(Event {   });
     
 }
 
@@ -340,7 +340,7 @@ impl<'a> HtmlNode<'a> {
     }
 }
 
-pub fn send <F: FnMut(& str) + 'static>(s: &str, f: F) {
+pub fn send <F: FnMut(Event) + 'a>(s: &str, f: F) {
    unsafe {
     let b = Box::new(f);
     let a = &*b as *const _;		
