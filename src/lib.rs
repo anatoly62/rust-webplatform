@@ -346,11 +346,13 @@ pub fn send <F: FnMut(&str) + 'static>(s: &str, f: F) {
     let a = &*b as *const _;		
     js! { (s,a as *const libc::c_void) b"\
         var xhr = new XMLHttpRequest();\
-        xhr.open('POST', 'http://127.0.0.1:8000/');\
-        xhr.onload = function() { my_func(this.responseText)};\
-	xhr.onerror = function() {alert(this.status)};\
+        xhr.open('POST', 'http://127.0.0.1:8000/',false);\
+//      xhr.onload = function() { my_func(this.responseText)};\
+//	xhr.onerror = function() {alert(this.status)};\
 	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded') ;\
 	xhr.send(UTF8ToString($0));\
+	if (xhr.status === 200) {alert(request.responseText)};\
+}    
     \0" };
 	}
 }
