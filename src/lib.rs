@@ -341,7 +341,7 @@ pub fn alert(s: &str) {
 }
 
 pub fn send <F: FnMut(& str) + 'static>(s: &str, f: F) {
-    js! { (s) b"\
+    js! { (s,f) b"\
         var xhr = new XMLHttpRequest();\
         xhr.open('POST', 'http://127.0.0.1:8000/');\
         xhr.onload = function() {f(this.responseText)};\
