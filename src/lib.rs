@@ -341,14 +341,18 @@ pub fn alert(s: &str) {
 }
 
 pub fn send <F: FnMut(& str) + 'static>(s: &str, f: F) {
-    js! { (s,f) b"\
+   unsafe {
+    let b = Box::new(f);
+    let a = &*b as *const _;		
+    js! { (s,a as *const libc::c_void) b"\
         var xhr = new XMLHttpRequest();\
         xhr.open('POST', 'http://127.0.0.1:8000/');\
-        xhr.onload = function() {f(this.responseText)};\
+        xhr.onload = function() {a(this.responseText)};\
 	xhr.onerror = function() {alert(this.status)};\
 	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded') ;\
 	xhr.send(UTF8ToString($0));\
     \0" };
+	}
 }
 
 
