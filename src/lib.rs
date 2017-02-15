@@ -341,7 +341,7 @@ impl<'a> HtmlNode<'a> {
 }
 
 pub fn send(server: &str, s: &str)->String {		
-    let a = js! { (s) b"\
+    let a = js! { (server, s) b"\
         var xhr = new XMLHttpRequest();\
         xhr.open('POST',UTF8ToString($0) ,false);\
 	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded') ;\
