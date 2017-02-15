@@ -344,11 +344,9 @@ pub fn send(s: &str) {
     js! { (s) b"\
         var xhr = new XMLHttpRequest();\
         xhr.open('POST', 'http://127.0.0.1:8000/',false);\
-//      xhr.onload = function() { my_func(this.responseText)};\
-//	xhr.onerror = function() {alert(this.status)};\
 	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded') ;\
 	xhr.send(UTF8ToString($0));\
-	if (xhr.status === 200) {alert(xhr.responseText)};\   
+	if (xhr.status === 200) alert(xhr.responseText);\
     \0" };
 }
 
