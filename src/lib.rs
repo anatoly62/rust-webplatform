@@ -141,19 +141,10 @@ extern fn rust_caller<F: FnMut(Event)>(a: *const libc::c_void, docptr: *const li
     });
 }
 
-extern fn my_caller<F: FnMut(Event)>(a: *const libc::c_void, docptr: *const libc::c_void, id: i32) {
+extern fn my_caller<F: FnMut()>(a: *const libc::c_void, docptr: *const libc::c_void, id: i32) {
     let v:&mut F = unsafe { mem::transmute(a) };
-    v(Event {
-        target: if id == -1 {
-            None
-        } else {
-            Some(HtmlNode {
-                id: id,
-                doc: unsafe { mem::transmute(docptr) },
-            })
-        }
-        // target: None,
-    });
+    v( {   });
+    
 }
 
 impl<'a> HtmlNode<'a> {
@@ -349,26 +340,28 @@ impl<'a> HtmlNode<'a> {
     }
 }
 
-pub fn alert(s: &str) {
-    js! { (s) b"\
-        alert(UTF8ToString($0));\
-    \0" };
-}
-
 pub fn send <F: FnMut(& str) + 'static>(s: &str, f: F) {
    unsafe {
     let b = Box::new(f);
     let a = &*b as *const _;		
-    js! { (s,a as *const libc::c_void) b"\
+    js! { (s,a as *const libc::c_void,my_caller::<F> as *const libc::c_void) b"\
         var xhr = new XMLHttpRequest();\
         xhr.open('POST', 'http://127.0.0.1:8000/');\
-        xhr.onload = function() {a(this.responseText)};\
+        xhr.onload = function() { Runtime.dynCall('viii', $2, [$1, $1, 1])};\
 	xhr.onerror = function() {alert(this.status)};\
 	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded') ;\
 	xhr.send(UTF8ToString($0));\
     \0" };
 	}
 }
+
+
+pub fn alert(s: &str) {
+    js! { (s) b"\
+        alert(UTF8ToString($0));\
+    \0" };
+}
+
 
 
 pub struct Document<'a> {
