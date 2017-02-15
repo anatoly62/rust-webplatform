@@ -344,7 +344,7 @@ pub fn send <F: FnMut(&str) + 'static>(s: &str, f: F) {
    unsafe {
     let b = Box::new(f);
     let a = &*b as *const _;		
-    js! { (s,a as *const libc::c_void,my_caller::<F> as *const libc::c_void) b"\
+    js! { (s,a as *const libc::c_void) b"\
         var xhr = new XMLHttpRequest();\
         xhr.open('POST', 'http://127.0.0.1:8000/');\
         xhr.onload = function() { my_func(this.responseText)};\
