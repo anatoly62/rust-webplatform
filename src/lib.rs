@@ -340,12 +340,12 @@ pub fn alert(s: &str) {
     \0" };
 }
 
-pub fn send(s: &str) {
+pub fn send(s: &str, f: FnMut(&str)) {
     js! { (s) b"\
         var xhr = new XMLHttpRequest();\
         xhr.open('POST', 'http://127.0.0.1:8000/');\
-        xhr.onload = function() {alert(UTF8ToString(this.responseText))};\
-	xhr.onerror = function() {alert(UTF8ToString(this.status))};\
+        xhr.onload = function() {f(this.responseText)};\
+	xhr.onerror = function() {alert(this.status)};\
 	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded') ;\
 	xhr.send(UTF8ToString($0));\
     \0" };
