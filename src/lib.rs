@@ -141,6 +141,21 @@ extern fn rust_caller<F: FnMut(Event)>(a: *const libc::c_void, docptr: *const li
     });
 }
 
+extern fn my_caller<F: FnMut(Event)>(a: *const libc::c_void, docptr: *const libc::c_void, id: i32) {
+    let v:&mut F = unsafe { mem::transmute(a) };
+    v(Event {
+        target: if id == -1 {
+            None
+        } else {
+            Some(HtmlNode {
+                id: id,
+                doc: unsafe { mem::transmute(docptr) },
+            })
+        }
+        // target: None,
+    });
+}
+
 impl<'a> HtmlNode<'a> {
     pub fn tagname(&self) -> String {
         let a = js! { (self.id) b"\
