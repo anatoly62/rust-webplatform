@@ -346,7 +346,6 @@ pub fn send(s: &str)->String {
         xhr.open('POST', 'http://127.0.0.1:8000/',false);\
 	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded') ;\
 	xhr.send(UTF8ToString($0));\
-	    xhr.responseText
 	if (xhr.status === 200)   return allocate(intArrayFromString(xhr.responseText), 'i8', ALLOC_STACK);\
     \0" };
 	 unsafe {
