@@ -14,7 +14,7 @@ use std::collections::HashSet;
 use std::char;
 use std::iter::IntoIterator;
 
-mod webplatform {
+mod rdom {
     pub use emscripten_asm_const;
     pub use emscripten_asm_const_int;
 }
@@ -50,13 +50,13 @@ macro_rules! js {
         {
             let mut arena:Vec<CString> = Vec::new();
             const LOCAL: &'static [u8] = $y;
-            unsafe { ::webplatform::emscripten_asm_const_int(&LOCAL[0] as *const _ as *const libc::c_char, $(Interop::as_int($x, &mut arena)),*) }
+            unsafe { ::rdom::emscripten_asm_const_int(&LOCAL[0] as *const _ as *const libc::c_char, $(Interop::as_int($x, &mut arena)),*) }
         }
     };
     ( $y:expr ) => {
         {
             const LOCAL: &'static [u8] = $y;
-            unsafe { ::webplatform::emscripten_asm_const_int(&LOCAL[0] as *const _ as *const libc::c_char) }
+            unsafe { ::rdom::emscripten_asm_const_int(&LOCAL[0] as *const _ as *const libc::c_char) }
         }
     };
 }
@@ -68,6 +68,7 @@ extern "C" {
     pub fn emscripten_pause_main_loop();
     pub fn emscripten_set_main_loop(m: extern fn(), fps: libc::c_int, infinite: libc::c_int);
 }
+
 
 pub struct HtmlNode<'a> {
     id: libc::c_int,
@@ -169,6 +170,12 @@ impl<'a> HtmlNode<'a> {
             WEBPLATFORM.rs_refs[$0].innerHTML = UTF8ToString($1);\
         \0" };
     }
+    pub fn load(&self, s: &str) {
+        js! { (self.id, s) b"\
+            WEBPLATFORM.rs_refs[$0].innerHTML = UTF8ToString($1);\
+        \0" };
+    }
+
 
     pub fn html_get(&self) -> String {
         let a = js! { (self.id) b"\
@@ -342,11 +349,11 @@ impl<'a> HtmlNode<'a> {
 
 pub fn send(server: &str, s: &str)->String {		
     let a = js! { (server, s) b"\
-        var xhr = new XMLHttpRequest();\
+		var xhr = new XMLHttpRequest();\
         xhr.open('POST',UTF8ToString($0) ,false);\
-	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded') ;\
-	xhr.send(UTF8ToString($1));\
-	if (xhr.status === 200)   return allocate(intArrayFromString(xhr.responseText), 'i8', ALLOC_STACK);\
+		xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded') ;\
+		xhr.send(UTF8ToString($1));\
+		if (xhr.status === 200)   return allocate(intArrayFromString(xhr.responseText), 'i8', ALLOC_STACK);\
     \0" };
 	 unsafe {
             str::from_utf8(CStr::from_ptr(a as *const libc::c_char).to_bytes()).unwrap().to_owned()
@@ -360,7 +367,137 @@ pub fn alert(s: &str) {
     \0" };
 }
 
+pub fn message(t: &str, s: &str) {
+    js! { (s) b"\
+        alert(UTF8ToString($0));\
+    \0" };
+}
 
+pub fn call_back<F: FnMut(Event) + 'static>(w:&HtmlNode, s: &str, f: F){
+    unsafe {
+        let b = Box::new(f);
+        let a = &*b as *const _;
+        js! { (w.id, s, a as *const libc::c_void,
+                rust_caller::<F> as *const libc::c_void,
+                w.doc as *const libc::c_void)
+                b"\
+                WEBPLATFORM.rs_refs[$0].addEventListener(UTF8ToString($1), function (e) {\
+                    Runtime.dynCall('viii', $3, [$2, $4, e.target ? WEBPLATFORM.rs_refs.push(e.target) - 1 : -1]);\
+                }, false);\
+            \0" };
+        (&*w.doc).refs.borrow_mut().push(b);
+
+    }
+}
+
+pub fn get_attr_str(w:&HtmlNode, s: &str) -> String {
+    let a = js! { (w.id, s) b"\
+            var a = allocate(intArrayFromString(WEBPLATFORM.rs_refs[$0][UTF8ToString($1)]), 'i8', ALLOC_STACK); console.log(WEBPLATFORM.rs_refs[$0]); return a;\
+        \0" };
+    unsafe {
+        str::from_utf8(CStr::from_ptr(a as *const libc::c_char).to_bytes()).unwrap().to_owned()
+    }
+}
+
+pub fn set_attr_str(w:&HtmlNode, s: &str, v: &str) {
+    js! { (w.id, s, v) b"\
+            WEBPLATFORM.rs_refs[$0][UTF8ToString($1)] = UTF8ToString($2);\
+        \0" };
+}
+
+pub fn set_attr_int(w:&HtmlNode, s: &str, v: i32) {
+    js! { (w.id, s, v) b"\
+            WEBPLATFORM.rs_refs[$0][UTF8ToString($1)] = $2;\
+        \0" };
+}
+
+pub fn get_attr_int(w:&HtmlNode, s: &str) -> i32 {
+    return js! { (w.id, s) b"\
+            return Number(WEBPLATFORM.rs_refs[$0][UTF8ToString($1)])\
+        \0" };
+}
+
+
+pub  struct Button <'a>{ w: HtmlNode<'a>}
+impl<'a> Button<'a> {
+    pub fn from(p: HtmlNode) -> Button { Button { w: p }}
+    pub fn get_text(self)->String{ get_attr_str(&self.w,"value")}
+    pub fn set_text(&self,  s: &str)->&Self {
+        set_attr_str(&self.w,"value",s);
+        &self
+    }
+    pub fn on_click<F: FnMut(Event) + 'static>(&self,  f: F)->&Self {
+        call_back(&self.w,"click",f);
+        &self
+    }
+}
+
+pub  struct Label <'a>{ w: HtmlNode<'a>}
+impl<'a> Label<'a> {
+    pub fn from(p: HtmlNode) -> Label { Label { w: p }}
+    pub fn get_text(self)->String{ self.w.html_get()}
+    pub fn set_text(&self,  s: &str)->&Self {
+        &self.w.html_set(s);
+        &self
+    }
+}
+
+pub  struct List <'a>{ w: HtmlNode<'a>}
+impl<'a> List<'a> {
+    pub fn from(p: HtmlNode) -> List { List { w: p }}
+    pub fn fill(&self,v:Vec<&str>)->&Self{
+        let mut s="".to_string();
+        for el in v { s=s+"<option>"+el+"</option>" };
+        &self.w.html_set(&s);
+        &self
+    }
+    pub fn get_index(self)->i32{ get_attr_int(&self.w,"selectedIndex")}
+    pub fn set_index(&self, n: i32)->&Self {
+        set_attr_int(&self.w,"selectedIndex",n);
+        &self
+    }
+    pub fn get_text(self)->String{
+        let n=get_attr_int(&self.w,"selectedIndex");
+        let a = js! { (self.w.id, n) b"\
+            return allocate(intArrayFromString(WEBPLATFORM.rs_refs[$0].options[$1].text), 'i8', ALLOC_STACK);\
+        \0" };
+        unsafe { str::from_utf8(CStr::from_ptr(a as *const libc::c_char).to_bytes()).unwrap().to_owned()}
+    }
+    pub fn set_text(&self,  s: &str)->&Self {
+        let a = js! { (self.w.id, s) b"\
+		var cb =WEBPLATFORM.rs_refs[$0];\
+        for (i=0;i<cb.length;i++) { if(UTF8ToString($1)==cb.options[i].text)  cb.options[i].selected=true };\
+    \0" };
+        &self
+    }
+    pub fn count(&self)->i32{
+        get_attr_int(&self.w,"length")
+    }
+    pub fn dropdown(&self,val:bool)->&Self{
+        set_attr_int(&self.w,"size",if val==true {1} else {self.count()});
+        &self
+    }
+    pub fn on_change<F: FnMut(Event) + 'static>(&self,  f: F)->&Self {
+        call_back(&self.w,"change",f);
+        &self
+    }
+}
+
+pub  struct Text <'a>{ w: HtmlNode<'a>}
+impl<'a> Text<'a> {
+    pub fn from(p: HtmlNode) -> Text { Text { w: p }}
+    pub fn get_text(self)->String{
+        get_attr_str(&self.w,"value")
+    }
+    pub fn set_text(&self,  s: &str)->&Self {
+        set_attr_str(&self.w,"value",s);
+        &self
+    }
+    pub fn on_change<F: FnMut(Event) + 'static>(&self,  f: F)->&Self {
+        call_back(&self.w,"change",f);
+        &self
+    }
+}
 
 pub struct Document<'a> {
     refs: Rc<RefCell<Vec<Box<FnMut(Event<'a>) + 'a>>>>,
@@ -429,7 +566,22 @@ impl<'a> Document<'a> {
             })
         }
     }
+
+    pub fn get_elem<'b>(&'b self, s: &str) -> HtmlNode<'a> {
+        let id = js! { (s) b"\
+            var value = document.querySelector(UTF8ToString($0));\
+            if (!value) {\
+                return -1;\
+            }\
+            return WEBPLATFORM.rs_refs.push(value) - 1;\
+        \0" };
+        HtmlNode {
+            id: id,
+            doc: self,
+        }
+    }
 }
+
 
 pub struct LocalStorageInterface;
 
@@ -513,7 +665,7 @@ impl Iterator for LocalStorageIterator {
 #[allow(non_upper_case_globals)]
 pub const LocalStorage: LocalStorageInterface = LocalStorageInterface;
 
-pub fn init<'a>() -> Document<'a> {
+pub fn init_gui<'a>() -> Document<'a> {
     js! { b"\
         console.log('hi');\
         window.WEBPLATFORM || (window.WEBPLATFORM = {\
@@ -531,7 +683,7 @@ extern fn leavemebe() {
     }
 }
 
-pub fn spin() {
+pub fn loop_gui() {
     unsafe {
         emscripten_set_main_loop(leavemebe, 0, 1);
 
