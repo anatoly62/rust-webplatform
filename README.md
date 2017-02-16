@@ -1,20 +1,17 @@
 # rust-webplatform
 
-A Rust library for use with emscripten to access the DOM.
+A Rust library for use with emscripten to access the DOM. Fork of (http://github.com/tcr/rust-webplatform)
 
-[Read the documentation](https://docs.rs/crate/webplatform), read [brson's post on how
-Rust works with emscripten](https://users.rust-lang.org/t/compiling-to-the-web-with-rust-and-emscripten/7627),
-or see an example app with [rust-todomvc](http://github.com/tcr/rust-todomvc).
+
 
 ```rust
-extern crate webplatform;
+extern crate rdom;
+use rdom::*;
 
 fn main() {
-    let document = webplatform::init();
-    let body = document.element_query("body").unwrap();
-    body.html_set("<h1>HELLO FROM RUST</h1> <button>CLICK ME</button>");
-    let button = document.element_query("button").unwrap();
-    button.on("click", |_| webplatform::alert("WITNESS ME"));
+    let doc = init_gui();
+    doc.get_elem("body").load("<h1>HELLO FROM RUST</h1> <button id='btHello'>CLICK ME</button>")
+    Button::from(doc.get_elem("#btHello")).on_click(|_| webplatform::alert("WITNESS ME"));    
 }
 ```
 
