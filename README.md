@@ -11,7 +11,7 @@ use rdom::*;
 fn main() {
     let doc = init_gui();
     doc.get_elem("body").load("<h1>HELLO FROM RUST</h1> <button id='btHello'>CLICK ME</button>")
-    Button::from(doc.get_elem("#btHello")).on_click(|_| webplatform::alert("WITNESS ME"));    
+    Button::from(doc.get_elem("#btHello")).on_click(|_| webplatform::alert("Hello from Rust"));    
 }
 ```
 
