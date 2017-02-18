@@ -87,6 +87,7 @@ impl<'a> Drop for HtmlNode<'a> {
     }
 }
 
+
 pub struct JSRef<'a> {
     ptr: *const HtmlNode<'a>,
 }
