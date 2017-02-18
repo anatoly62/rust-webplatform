@@ -142,7 +142,7 @@ extern fn rust_caller<F: FnMut(Event)>(a: *const libc::c_void, docptr: *const li
     });
 }
 
-extern fn my_caller<F: FnMut(Event)->i32>(a: *const libc::c_void, docptr: *const libc::c_void, id: i32) {
+extern fn my_caller<F: FnMut(Event,int)>(a: *const libc::c_void, docptr: *const libc::c_void, id: i32) {
     let v:&mut F = unsafe { mem::transmute(a) };
     v(Event {
         target: if id == -1 {
@@ -388,12 +388,12 @@ pub fn load(w:HtmlNode, s: &str) {
         \0" };
     }
 
-pub fn call_back<F: FnMut(Event)->i32 + 'static>(w:&HtmlNode, s: &str, f: F){
+pub fn call_back<F: FnMut(Event,int) + 'static>(w:&HtmlNode, s: &str, f: F){
     unsafe {
         let b = Box::new(f);
         let a = &*b as *const _;
         js! { (w.id, s, a as *const libc::c_void,
-                my_caller::<F> as *const libc::c_int,
+                my_caller::<F> as *const libc::c_void,
                 w.doc as *const libc::c_void)
                 b"\
                 WEBPLATFORM.rs_refs[$0].addEventListener(UTF8ToString($1), function (e) {\
