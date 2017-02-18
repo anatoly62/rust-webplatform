@@ -144,7 +144,7 @@ extern fn rust_caller<F: FnMut(Event)>(a: *const libc::c_void, docptr: *const li
 
 extern fn my_caller<F: FnMut(Event,libc::c_int)>(a: *const libc::c_void, docptr: *const libc::c_void, id: i32) {
     let v:&mut F = unsafe { mem::transmute(a) };
-    v(Event,1 {
+    v(Event {
         target: if id == -1 {
             None
         } else {
@@ -154,7 +154,7 @@ extern fn my_caller<F: FnMut(Event,libc::c_int)>(a: *const libc::c_void, docptr:
             })
         }
         // target: None,
-    });
+    },0);
 }
 
 // extern fn my_caller<F: FnMut(&str)>(a: *const libc::c_void, docptr: *const libc::c_void, id: i32) {
