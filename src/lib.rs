@@ -170,13 +170,7 @@ impl<'a> HtmlNode<'a> {
             WEBPLATFORM.rs_refs[$0].innerHTML = UTF8ToString($1);\
         \0" };
     }
-    pub fn load(&self, s: &str) {
-        js! { (self.id, s) b"\
-            WEBPLATFORM.rs_refs[$0].innerHTML = UTF8ToString($1);\
-        \0" };
-    }
-
-
+    
     pub fn html_get(&self) -> String {
         let a = js! { (self.id) b"\
             return allocate(intArrayFromString(WEBPLATFORM.rs_refs[$0].innerHTML), 'i8', ALLOC_STACK);\
@@ -373,6 +367,12 @@ pub fn message(t: &str, s: &str) {
     \0" };
 }
 
+pub fn load(w:&HtmlNode,, s: &str) {
+        js! { (w.id, s) b"\
+            WEBPLATFORM.rs_refs[$0].innerHTML = UTF8ToString($1);\
+        \0" };
+    }
+
 pub fn call_back<F: FnMut(Event) + 'static>(w:&HtmlNode, s: &str, f: F){
     unsafe {
         let b = Box::new(f);
@@ -567,7 +567,7 @@ impl<'a> Document<'a> {
         }
     }
 
-    pub fn get_elem<'b>(&'b self, s: &str) -> HtmlNode<'a> {
+    pub fn elem<'b>(&'b self, s: &str) -> HtmlNode<'a> {
         let id = js! { (s) b"\
             var value = document.querySelector(UTF8ToString($0));\
             if (!value) {\
