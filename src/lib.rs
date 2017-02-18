@@ -373,7 +373,7 @@ pub fn load(w:HtmlNode, s: &str) {
         \0" };
     }
 
-pub fn call_back<F: FnMut(Event) + 'static>(w:&HtmlNode, s: &str, f: F){
+pub fn call_back<F: FnMut(Event) + 'static>(w:&HtmlNode, s: &str, f: F)->i32{
     unsafe {
         let b = Box::new(f);
         let a = &*b as *const _;
