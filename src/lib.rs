@@ -367,7 +367,7 @@ pub fn message(t: &str, s: &str) {
     \0" };
 }
 
-pub fn load(w:&HtmlNode,, s: &str) {
+pub fn load(w:&HtmlNode, s: &str) {
         js! { (w.id, s) b"\
             WEBPLATFORM.rs_refs[$0].innerHTML = UTF8ToString($1);\
         \0" };
