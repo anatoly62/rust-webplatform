@@ -386,6 +386,7 @@ pub fn call_back<F: FnMut(Event) + 'static>(w:&HtmlNode, s: &str, f: F)->i32{
                 }, false);\
             \0" };
         (&*w.doc).refs.borrow_mut().push(b);
+	0
 
     }
 }
