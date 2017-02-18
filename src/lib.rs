@@ -61,6 +61,9 @@ macro_rules! js {
     };
 }
 
+#[macro_export]
+macro_rules! call_back {($n:ident,$b:block) => (fn $n(ev:Event) $b);}
+
 extern "C" {
     pub fn emscripten_asm_con(s: *const libc::c_char);
     pub fn emscripten_asm_const(s: *const libc::c_char);
