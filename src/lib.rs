@@ -398,6 +398,7 @@ pub fn call_back<F: FnMut(Event)->i32 + 'static>(w:&HtmlNode, s: &str, f: F){
                 b"\
                 WEBPLATFORM.rs_refs[$0].addEventListener(UTF8ToString($1), function (e) {\
                     Runtime.dynCall('viii', $3, [$2, $4, e.target ? WEBPLATFORM.rs_refs.push(e.target) - 1 : -1]);\
+		    return 0;\
                 }, false);\
             \0" };
         (&*w.doc).refs.borrow_mut().push(b);
