@@ -1,6 +1,7 @@
 # rust-webplatform
 
 A Rust library for use with emscripten to access the DOM. Fork of (http://github.com/tcr/rust-webplatform)
+This library is equal to RIUP library by used widgets and functions.
 
 
 
